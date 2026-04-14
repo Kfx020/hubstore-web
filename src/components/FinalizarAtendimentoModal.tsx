@@ -1,13 +1,40 @@
 "use client";
 
+/*
+  IMPORTS
+
+  useEffect:
+  usado para resetar os campos sempre que o modal abrir
+
+  useState:
+  usado para guardar os valores escolhidos no modal
+*/
 import { useEffect, useState } from "react";
 
+/*
+  TIPOS DE RESULTADO POSSÍVEIS NO MODAL
+*/
 type ResultadoAtendimento =
   | "Venda"
   | "Não venda"
   | "Troca"
   | "Troca com diferença";
 
+/*
+  TIPAGEM DAS PROPS DO MODAL
+
+  aberto:
+  controla se o modal aparece ou não
+
+  vendedor:
+  nome do vendedor que está sendo finalizado
+
+  onFechar:
+  função para fechar o modal
+
+  onSalvar:
+  função chamada quando o usuário salva o atendimento
+*/
 type FinalizarAtendimentoModalProps = {
   aberto: boolean;
   vendedor: string | null;
@@ -21,6 +48,12 @@ type FinalizarAtendimentoModalProps = {
   }) => void;
 };
 
+/*
+  LISTAS FIXAS DO MVP
+
+  Essas listas são exibidas como botões de seleção no modal.
+  Mais na frente elas podem vir da API ou do banco.
+*/
 const setores = [
   "Feminino",
   "Masculino",
@@ -57,12 +90,33 @@ const motivosNaoVenda = [
   "Outro",
 ];
 
+/*
+  COMPONENTE DO MODAL
+*/
 export default function FinalizarAtendimentoModal({
   aberto,
   vendedor,
   onFechar,
   onSalvar,
 }: FinalizarAtendimentoModalProps) {
+  /*
+    ESTADOS INTERNOS DO MODAL
+
+    resultado:
+    guarda o resultado principal escolhido
+
+    setor:
+    guarda o setor selecionado
+
+    categorias:
+    guarda as categorias selecionadas
+
+    motivo:
+    guarda o motivo da não venda, quando necessário
+
+    erro:
+    mostra mensagem de validação
+  */
   const [resultado, setResultado] =
     useState<ResultadoAtendimento>("Venda");
   const [setor, setSetor] = useState("Feminino");
@@ -70,6 +124,12 @@ export default function FinalizarAtendimentoModal({
   const [motivo, setMotivo] = useState("Falta");
   const [erro, setErro] = useState("");
 
+  /*
+    useEffect DE RESET
+
+    Sempre que o modal abrir, resetamos os campos
+    para ele começar limpo na próxima finalização.
+  */
   useEffect(() => {
     if (aberto) {
       setResultado("Venda");
@@ -80,8 +140,23 @@ export default function FinalizarAtendimentoModal({
     }
   }, [aberto]);
 
+  /*
+    REGRA DE EXIBIÇÃO
+
+    Se o modal não estiver aberto
+    ou se não houver vendedor selecionado,
+    não renderiza nada.
+  */
   if (!aberto || !vendedor) return null;
 
+  /*
+    FUNÇÃO: alternarCategoria
+
+    O que ela faz:
+    - adiciona categoria se ainda não foi selecionada
+    - remove categoria se já foi selecionada
+    - bloqueia se tentar passar de 3 categorias
+  */
   function alternarCategoria(categoria: string) {
     const jaExiste = categorias.includes(categoria);
 
@@ -100,8 +175,17 @@ export default function FinalizarAtendimentoModal({
     setErro("");
   }
 
+  /*
+    FUNÇÃO: salvar
+
+    O que ela faz:
+    - valida se existe pelo menos 1 categoria
+    - chama a função onSalvar
+    - manda para a página os dados preenchidos
+  */
   function salvar() {
-    if (!vendedor) return; {/* Adicionei esse if pois eles estava esperando vendedor como string e ele recebe stri | null estava dando erro */}
+    if (!vendedor) return;
+
     if (categorias.length === 0) {
       setErro("Selecione pelo menos 1 categoria.");
       return;
@@ -117,19 +201,29 @@ export default function FinalizarAtendimentoModal({
   }
 
   return (
+    /*
+      CAMADA ESCURA DE FUNDO
+
+      Essa camada cobre a tela inteira
+      e ajuda a destacar o modal
+    */
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      {/* Caixa principal do modal */}
       <div className="w-full max-w-3xl rounded-2xl border border-neutral-800 bg-neutral-900 shadow-2xl">
+        {/* Cabeçalho do modal */}
         <div className="border-b border-neutral-800 px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-2xl font-bold text-white">
                 Finalizar atendimento
               </h2>
+
               <p className="mt-2 text-sm text-neutral-300">
                 Vendedor: {vendedor}
               </p>
             </div>
 
+            {/* Botão de fechar */}
             <button
               onClick={onFechar}
               className="rounded-lg border border-neutral-700 px-3 py-2 text-sm text-white hover:bg-neutral-800"
@@ -139,7 +233,9 @@ export default function FinalizarAtendimentoModal({
           </div>
         </div>
 
+        {/* Corpo do modal */}
         <div className="space-y-6 px-6 py-5 text-white">
+          {/* BLOCO: resultado */}
           <div>
             <p className="mb-3 text-sm font-medium text-neutral-300">
               Resultado
@@ -164,6 +260,7 @@ export default function FinalizarAtendimentoModal({
             </div>
           </div>
 
+          {/* BLOCO: setor */}
           <div>
             <p className="mb-3 text-sm font-medium text-neutral-300">
               Setor
@@ -186,11 +283,13 @@ export default function FinalizarAtendimentoModal({
             </div>
           </div>
 
+          {/* BLOCO: categorias */}
           <div>
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-sm font-medium text-neutral-300">
                 Categorias
               </p>
+
               <span className="text-xs text-neutral-400">
                 Máximo: 3
               </span>
@@ -217,6 +316,8 @@ export default function FinalizarAtendimentoModal({
             </div>
           </div>
 
+          {/* BLOCO: motivo da não venda
+              Só aparece quando o resultado for "Não venda" */}
           {resultado === "Não venda" && (
             <div>
               <p className="mb-3 text-sm font-medium text-neutral-300">
@@ -241,11 +342,13 @@ export default function FinalizarAtendimentoModal({
             </div>
           )}
 
+          {/* BLOCO: erro de validação */}
           {erro && (
             <p className="text-sm font-medium text-red-400">{erro}</p>
           )}
         </div>
 
+        {/* Rodapé do modal com ações */}
         <div className="flex items-center justify-end gap-3 border-t border-neutral-800 px-6 py-5">
           <button
             onClick={onFechar}
