@@ -47,7 +47,7 @@ export default function ResumoPage() {
           CONTAINER PRINCIPAL
 
           Escolhi manter a mesma linguagem visual das outras telas
-          para deixar o HUBStore mais consistente visualmente.
+          para deixar o Vezify mais consistente visualmente.
         */}
         <div className="overflow-hidden rounded-[28px] border border-neutral-800 bg-neutral-900/95 shadow-[0_20px_80px_rgba(0,0,0,0.45)]">
           {/* CABEÇALHO DA TELA */}
@@ -68,7 +68,7 @@ export default function ResumoPage() {
                 </p>
 
                 <div className="mt-4 space-y-1 text-sm text-neutral-300">
-                  <p>Sistema: HUBStore</p>
+                  <p>Sistema: Vezify</p>
                   <p>Cliente: Hering</p>
                   <p>Loja: Riomar</p>
                   <p>Data: 13/04/2026</p>

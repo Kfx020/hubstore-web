@@ -77,7 +77,7 @@ export default function RankingPage() {
                 </p>
 
                 <div className="mt-4 space-y-1 text-sm text-neutral-300">
-                  <p>Sistema: HUBStore</p>
+                  <p>Sistema: Vezify</p>
                   <p>Cliente: Hering</p>
                   <p>Loja: Riomar</p>
                   <p>Data: 13/04/2026</p>
