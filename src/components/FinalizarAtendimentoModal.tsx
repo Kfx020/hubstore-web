@@ -1,28 +1,13 @@
 "use client";
 
-/*
-  IMPORTS
+import { useState } from "react";
 
-  useEffect:
-  usado para resetar os campos sempre que o modal abrir
-
-  useState:
-  usado para guardar os valores escolhidos no modal
-*/
-import { useEffect, useState } from "react";
-
-/*
-  TIPOS DE RESULTADO POSSIVEIS NO MODAL
-*/
 type ResultadoAtendimento =
   | "Venda"
   | "Não venda"
   | "Troca"
   | "Troca com diferença";
 
-/*
-  TIPAGEM DAS PROPS DO MODAL
-*/
 type FinalizarAtendimentoModalProps = {
   aberto: boolean;
   vendedor: string | null;
@@ -37,9 +22,6 @@ type FinalizarAtendimentoModalProps = {
   }) => void;
 };
 
-/*
-  LISTAS FIXAS DO MVP
-*/
 const setores = [
   "Feminino",
   "Masculino",
@@ -76,18 +58,36 @@ const motivosNaoVenda = [
   "Outro",
 ];
 
-/*
-  COMPONENTE DO MODAL
-*/
+function motivoExigeDescricao(motivo: string) {
+  return motivo === "Outro";
+}
+
+function obterPlaceholderDescricao(motivo: string) {
+  if (motivo === "Falta") {
+    return "Ex.: Cliente procurava camiseta basica preta no tamanho M";
+  }
+
+  if (motivo === "Tamanho") {
+    return "Ex.: Cliente queria a peca no tamanho G";
+  }
+
+  if (motivo === "Preco") {
+    return "Ex.: Cliente considerou o valor acima do esperado";
+  }
+
+  if (motivo === "Olhadinha") {
+    return "Ex.: Cliente entrou apenas para olhar";
+  }
+
+  return "Descreva o motivo informado pelo cliente";
+}
+
 export default function FinalizarAtendimentoModal({
   aberto,
   vendedor,
   onFechar,
   onSalvar,
 }: FinalizarAtendimentoModalProps) {
-  /*
-    ESTADOS INTERNOS DO MODAL
-  */
   const [resultado, setResultado] =
     useState<ResultadoAtendimento>("Venda");
   const [setor, setSetor] = useState("Feminino");
@@ -96,33 +96,8 @@ export default function FinalizarAtendimentoModal({
   const [detalheMotivo, setDetalheMotivo] = useState("");
   const [erro, setErro] = useState("");
 
-  /*
-    useEffect DE RESET
-  */
-  useEffect(() => {
-    if (aberto) {
-      setResultado("Venda");
-      setSetor("Feminino");
-      setCategorias([]);
-      setMotivo("Falta");
-      setDetalheMotivo("");
-      setErro("");
-    }
-  }, [aberto]);
-
-  /*
-    REGRA DE EXIBICAO
-  */
   if (!aberto || !vendedor) return null;
 
-  /*
-    FUNCAO: alternarCategoria
-
-    O que ela faz:
-    - adiciona categoria se ainda nao foi selecionada
-    - remove categoria se ja foi selecionada
-    - bloqueia se tentar passar de 3 categorias
-  */
   function alternarCategoria(categoria: string) {
     const jaExiste = categorias.includes(categoria);
 
@@ -141,14 +116,6 @@ export default function FinalizarAtendimentoModal({
     setErro("");
   }
 
-  /*
-    FUNCAO: salvar
-
-    O que ela faz:
-    - valida se existe pelo menos 1 categoria
-    - valida o detalhe quando for nao venda
-    - chama a funcao onSalvar
-  */
   function salvar() {
     if (!vendedor) return;
 
@@ -157,8 +124,12 @@ export default function FinalizarAtendimentoModal({
       return;
     }
 
-    if (resultado === "Não venda" && detalheMotivo.trim() === "") {
-      setErro("Escreva o detalhe do motivo da nao venda.");
+    if (
+      resultado === "Não venda" &&
+      motivoExigeDescricao(motivo) &&
+      detalheMotivo.trim() === ""
+    ) {
+      setErro("Descricao do motivo e obrigatoria quando o motivo for Outro.");
       return;
     }
 
@@ -168,22 +139,17 @@ export default function FinalizarAtendimentoModal({
       setor,
       categorias,
       motivo: resultado === "Não venda" ? motivo : "",
-      detalheMotivo: resultado === "Não venda" ? detalheMotivo : "",
+      detalheMotivo: resultado === "Não venda" ? detalheMotivo.trim() : "",
     });
   }
 
   return (
-    /*
-      CAMADA ESCURA DE FUNDO
-    */
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      {/* Caixa principal do modal */}
       <div className="w-full max-w-3xl rounded-2xl border border-neutral-800 bg-neutral-900 shadow-2xl">
-        {/* Cabecalho do modal */}
-        <div className="border-b border-neutral-800 px-6 py-5">
+        <div className="border-b border-neutral-800 px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-xl font-bold text-white sm:text-2xl">
                 Finalizar atendimento
               </h2>
 
@@ -192,7 +158,6 @@ export default function FinalizarAtendimentoModal({
               </p>
             </div>
 
-            {/* Botao de fechar */}
             <button
               onClick={onFechar}
               className="rounded-lg border border-neutral-700 px-3 py-2 text-sm text-white hover:bg-neutral-800"
@@ -202,38 +167,38 @@ export default function FinalizarAtendimentoModal({
           </div>
         </div>
 
-        {/* Corpo do modal */}
-        <div className="space-y-6 px-6 py-5 text-white">
-          {/* BLOCO: resultado */}
+        <div className="space-y-6 px-4 py-5 text-white sm:px-6">
           <div>
             <p className="mb-3 text-sm font-medium text-neutral-300">
               Resultado
             </p>
 
             <div className="flex flex-wrap gap-2">
-              {(["Venda", "Não venda", "Troca", "Troca com diferença"] as ResultadoAtendimento[]).map(
-                (item) => (
-                  <button
-                    key={item}
-                    onClick={() => setResultado(item)}
-                    className={`rounded-lg border px-3 py-2 text-sm transition ${
-                      resultado === item
-                        ? "border-white bg-white text-black"
-                        : "border-neutral-700 bg-neutral-950 text-white hover:bg-neutral-800"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                )
-              )}
+              {(
+                [
+                  "Venda",
+                  "Não venda",
+                  "Troca",
+                  "Troca com diferença",
+                ] as ResultadoAtendimento[]
+              ).map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setResultado(item)}
+                  className={`rounded-lg border px-3 py-2 text-sm transition ${
+                    resultado === item
+                      ? "border-white bg-white text-black"
+                      : "border-neutral-700 bg-neutral-950 text-white hover:bg-neutral-800"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* BLOCO: setor */}
           <div>
-            <p className="mb-3 text-sm font-medium text-neutral-300">
-              Setor
-            </p>
+            <p className="mb-3 text-sm font-medium text-neutral-300">Setor</p>
 
             <div className="flex flex-wrap gap-2">
               {setores.map((item) => (
@@ -252,7 +217,6 @@ export default function FinalizarAtendimentoModal({
             </div>
           </div>
 
-          {/* BLOCO: categorias */}
           <div>
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-sm font-medium text-neutral-300">
@@ -283,7 +247,6 @@ export default function FinalizarAtendimentoModal({
             </div>
           </div>
 
-          {/* BLOCO: motivo da nao venda */}
           {resultado === "Não venda" && (
             <div>
               <p className="mb-3 text-sm font-medium text-neutral-300">
@@ -309,10 +272,15 @@ export default function FinalizarAtendimentoModal({
                 ))}
               </div>
 
-              {/* Campo de detalhe do motivo */}
               <div className="mt-4">
                 <p className="mb-2 text-sm font-medium text-neutral-300">
-                  Detalhe do motivo
+                  Descricao do motivo
+                </p>
+
+                <p className="mb-3 text-xs text-neutral-500">
+                  {motivoExigeDescricao(motivo)
+                    ? "Campo obrigatorio para o motivo Outro"
+                    : "Campo opcional para complementar o motivo"}
                 </p>
 
                 <input
@@ -322,31 +290,17 @@ export default function FinalizarAtendimentoModal({
                     setDetalheMotivo(event.target.value);
                     setErro("");
                   }}
-                  placeholder={
-                    motivo === "Falta"
-                      ? "Ex.: Camiseta basica preta M"
-                      : motivo === "Tamanho"
-                      ? "Ex.: Cliente queria tamanho G"
-                      : motivo === "Preco"
-                      ? "Ex.: Achou o valor alto"
-                      : motivo === "Olhadinha"
-                      ? "Ex.: So entrou para olhar"
-                      : "Digite um detalhe"
-                  }
+                  placeholder={obterPlaceholderDescricao(motivo)}
                   className="w-full rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-3 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:border-white"
                 />
               </div>
             </div>
           )}
 
-          {/* BLOCO: erro de validacao */}
-          {erro && (
-            <p className="text-sm font-medium text-red-400">{erro}</p>
-          )}
+          {erro && <p className="text-sm font-medium text-red-400">{erro}</p>}
         </div>
 
-        {/* Rodape do modal com acoes */}
-        <div className="flex items-center justify-end gap-3 border-t border-neutral-800 px-6 py-5">
+        <div className="flex flex-col-reverse gap-3 border-t border-neutral-800 px-4 py-4 sm:flex-row sm:justify-end sm:px-6 sm:py-5">
           <button
             onClick={onFechar}
             className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-white hover:bg-neutral-800"

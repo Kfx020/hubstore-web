@@ -2,15 +2,20 @@
 
 import { createContext, useContext, useMemo, useState } from "react";
 
-import type { Atendimento, Loja, Vendedor } from "@/lib/types";
+import type { Atendimento, Cliente, Loja, Marca, Vendedor } from "@/lib/types";
 import {
   atendimentosIniciais,
+  clienteAtual,
   lojaAtual,
+  marcaAtual,
   vendedoresLojaAtual,
 } from "@/lib/mock-data";
 
 type AppStateContextType = {
   lojaAtual: Loja;
+  clienteAtual: Cliente;
+  marcaAtual: Marca;
+  dataOperacao: string;
   vendedores: Vendedor[];
   atendimentos: Atendimento[];
 
@@ -24,6 +29,10 @@ type AppStateProviderProps = {
   children: React.ReactNode;
 };
 
+function formatarDataOperacao(data: Date) {
+  return data.toLocaleDateString("pt-BR");
+}
+
 export function AppStateProvider({ children }: AppStateProviderProps) {
   /*
     vendedores:
@@ -35,6 +44,7 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   const [vendedores, setVendedores] = useState<Vendedor[]>(vendedoresLojaAtual);
   const [atendimentos, setAtendimentos] =
     useState<Atendimento[]>(atendimentosIniciais);
+  const [dataOperacao] = useState(() => formatarDataOperacao(new Date()));
 
   /*
     useMemo:
@@ -43,12 +53,15 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   const value = useMemo(
     () => ({
       lojaAtual,
+      clienteAtual,
+      marcaAtual,
+      dataOperacao,
       vendedores,
       atendimentos,
       setVendedores,
       setAtendimentos,
     }),
-    [vendedores, atendimentos]
+    [vendedores, atendimentos, dataOperacao]
   );
 
   return (

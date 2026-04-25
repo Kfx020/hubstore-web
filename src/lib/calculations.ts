@@ -14,6 +14,15 @@ type MetaVendedorCalculada = {
   valorMetaDia: number;
 };
 
+type ResumoMetasLojaCalculado = {
+  metaMensalLoja: number;
+  diasOperacionaisMes: number;
+  metaDiariaLoja: number;
+  quantidadeVendedores: number;
+  metaMensalPorVendedor: number;
+  metaDiariaPorVendedor: number;
+};
+
 function arredondarMoeda(valor: number) {
   return Math.round(valor * 100) / 100;
 }
@@ -157,6 +166,34 @@ export function calcularMetasVendedoresDaLoja(
     ),
     valorMetaDia: arredondarMoeda(metaLoja.valorMetaDia / vendedoresAtivos.length),
   }));
+}
+
+export function calcularResumoMetasLoja(
+  loja: Loja,
+  vendedores: Vendedor[]
+): ResumoMetasLojaCalculado {
+  const vendedoresAtivos = vendedores.filter(
+    (vendedor) => vendedor.lojaId === loja.id && vendedor.ativo
+  );
+
+  const metaLoja = calcularMetaLoja(loja);
+  const diasOperacionaisMes = contarDiasOperacionaisNoMes(loja);
+  const quantidadeVendedores = vendedoresAtivos.length;
+
+  return {
+    metaMensalLoja: metaLoja.valorMetaMes,
+    diasOperacionaisMes,
+    metaDiariaLoja: metaLoja.valorMetaDia,
+    quantidadeVendedores,
+    metaMensalPorVendedor:
+      quantidadeVendedores > 0
+        ? arredondarMoeda(metaLoja.valorMetaMes / quantidadeVendedores)
+        : 0,
+    metaDiariaPorVendedor:
+      quantidadeVendedores > 0
+        ? arredondarMoeda(metaLoja.valorMetaDia / quantidadeVendedores)
+        : 0,
+  };
 }
 
 export function formatarMoeda(valor: number) {

@@ -65,7 +65,11 @@ export default function OperacaoPage() {
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 useEffect(() => {
   if (!mounted) return;
@@ -105,8 +109,15 @@ useEffect(() => {
     window.removeEventListener("popstate", handlePopState);
   };
 }, [mounted, router]);
-  const { lojaAtual, vendedores, setVendedores, setAtendimentos } =
-    useAppState();
+  const {
+    lojaAtual,
+    clienteAtual,
+    marcaAtual,
+    dataOperacao,
+    vendedores,
+    setVendedores,
+    setAtendimentos,
+  } = useAppState();
 
   const fila = vendedores.filter((vendedor) => vendedor.status === "fila");
   const emAtendimento = vendedores.filter(
@@ -347,9 +358,9 @@ useEffect(() => {
             <div className="flex h-full flex-col overflow-hidden rounded-[24px] border border-neutral-800 bg-neutral-900/95 shadow-[0_20px_80px_rgba(0,0,0,0.45)] sm:rounded-[28px]">
               <Header
                 produto="Vezify"
-                cliente="Hering"
+                cliente={`${marcaAtual.nome} - ${clienteAtual.nome}`}
                 loja={lojaAtual.nome}
-                data="13/04/2026"
+                data={dataOperacao}
                 status="Online"
               />
 
@@ -522,6 +533,11 @@ useEffect(() => {
       </DndContext>
 
       <FinalizarAtendimentoModal
+        key={
+          modalAberto
+            ? `${vendedorSelecionado ?? "sem-vendedor"}-${destinoFinalizacao}`
+            : "modal-fechado"
+        }
         aberto={modalAberto}
         vendedor={vendedorSelecionado}
         onFechar={fecharModal}

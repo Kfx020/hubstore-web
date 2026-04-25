@@ -2,12 +2,14 @@
 
 import { useMemo } from "react";
 
-import Header from "@/components/Header";
 import BackToOperationButton from "@/components/BackToOperationButton";
+import Header from "@/components/Header";
 import { useAppState } from "@/context/AppStateContext";
+import { calcularResumoMetasLoja, formatarMoeda } from "@/lib/calculations";
 
 export default function MetasPage() {
-  const { lojaAtual, vendedores } = useAppState();
+  const { lojaAtual, clienteAtual, marcaAtual, dataOperacao, vendedores } =
+    useAppState();
 
   const vendedoresAtivosLoja = useMemo(() => {
     return vendedores.filter(
@@ -16,144 +18,113 @@ export default function MetasPage() {
   }, [vendedores, lojaAtual.id]);
 
   const metas = useMemo(() => {
-    const metaMensalLoja = lojaAtual.valorMetaMes;
-
-    const diasOperacionaisMes = lojaAtual.diasOperacaoSemana.length * 4;
-
-    const metaDiariaLoja =
-      diasOperacionaisMes > 0 ? metaMensalLoja / diasOperacionaisMes : 0;
-
-    const quantidadeVendedores = vendedoresAtivosLoja.length;
-
-    const metaMensalPorVendedor =
-      quantidadeVendedores > 0
-        ? metaMensalLoja / quantidadeVendedores
-        : 0;
-
-    const metaDiariaPorVendedor =
-      quantidadeVendedores > 0
-        ? metaDiariaLoja / quantidadeVendedores
-        : 0;
-
-    return {
-      metaMensalLoja,
-      diasOperacionaisMes,
-      metaDiariaLoja,
-      quantidadeVendedores,
-      metaMensalPorVendedor,
-      metaDiariaPorVendedor,
-    };
+    return calcularResumoMetasLoja(lojaAtual, vendedoresAtivosLoja);
   }, [lojaAtual, vendedoresAtivosLoja]);
 
-  function formatarMoeda(valor: number) {
-    return valor.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  }
-
   return (
-    <main className="min-h-screen bg-gradient-to-b from-neutral-950 via-neutral-950 to-neutral-900 px-4 py-6 text-white md:px-6 md:py-8">
+    <main className="min-h-screen bg-gradient-to-b from-neutral-950 via-neutral-950 to-neutral-900 px-4 py-4 text-white sm:px-5 md:px-6 md:py-8">
       <div className="mx-auto max-w-7xl">
-        <div className="overflow-hidden rounded-[28px] border border-neutral-800 bg-neutral-900/95 shadow-[0_20px_80px_rgba(0,0,0,0.45)]">
+        <div className="overflow-hidden rounded-[24px] border border-neutral-800 bg-neutral-900/95 shadow-[0_20px_80px_rgba(0,0,0,0.45)] md:rounded-[28px]">
           <Header
             produto="Vezify"
-            cliente="Hering"
+            cliente={`${marcaAtual.nome} - ${clienteAtual.nome}`}
             loja={lojaAtual.nome}
-            data="13/04/2026"
+            data={dataOperacao}
             status="Online"
           />
 
-          <section className="border-b border-neutral-800 px-6 py-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
+          <section className="border-b border-neutral-800 px-4 py-5 sm:px-6 sm:py-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
                 <p className="text-xs uppercase tracking-[0.25em] text-cyan-400">
-                  Metas da operação
+                  Metas da operacao
                 </p>
 
-                <h2 className="mt-2 text-3xl font-bold">Metas</h2>
+                <h2 className="mt-2 text-2xl font-bold sm:text-3xl">Metas</h2>
 
-                <p className="mt-2 text-sm text-neutral-400">
-                  Visão inicial da meta da loja e da distribuição por vendedor.
+                <p className="mt-2 text-sm leading-6 text-neutral-400">
+                  Visao inicial da meta da loja e da distribuicao por vendedor.
                 </p>
               </div>
 
-             <BackToOperationButton
-                label="Voltar para operação"
-                className="rounded-xl border border-neutral-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-neutral-800"
-            />
+              <BackToOperationButton
+                label="Voltar para operacao"
+                className="w-full rounded-xl border border-neutral-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-neutral-800 sm:w-auto"
+              />
             </div>
           </section>
 
-          <section className="grid gap-4 border-b border-neutral-800 p-6 md:grid-cols-2 xl:grid-cols-3">
+          <section className="grid gap-4 border-b border-neutral-800 p-4 sm:p-6 md:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
               <p className="text-sm text-neutral-400">Meta mensal da loja</p>
-              <p className="mt-3 text-3xl font-bold text-white">
+              <p className="mt-3 break-words text-2xl font-bold text-white sm:text-3xl">
                 {formatarMoeda(metas.metaMensalLoja)}
               </p>
             </div>
 
             <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
-              <p className="text-sm text-neutral-400">Dias operacionais no mês</p>
-              <p className="mt-3 text-3xl font-bold text-white">
+              <p className="text-sm text-neutral-400">Dias operacionais no mes</p>
+              <p className="mt-3 text-2xl font-bold text-white sm:text-3xl">
                 {metas.diasOperacionaisMes}
               </p>
             </div>
 
-            <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
-              <p className="text-sm text-neutral-400">Meta diária da loja</p>
-              <p className="mt-3 text-3xl font-bold text-white">
+            <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5 md:col-span-2 xl:col-span-1">
+              <p className="text-sm text-neutral-400">Meta diaria da loja</p>
+              <p className="mt-3 break-words text-2xl font-bold text-white sm:text-3xl">
                 {formatarMoeda(metas.metaDiariaLoja)}
               </p>
             </div>
 
             <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
               <p className="text-sm text-neutral-400">Vendedores ativos</p>
-              <p className="mt-3 text-3xl font-bold text-white">
+              <p className="mt-3 text-2xl font-bold text-white sm:text-3xl">
                 {metas.quantidadeVendedores}
               </p>
             </div>
 
             <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
               <p className="text-sm text-neutral-400">Meta mensal por vendedor</p>
-              <p className="mt-3 text-3xl font-bold text-white">
+              <p className="mt-3 break-words text-2xl font-bold text-white sm:text-3xl">
                 {formatarMoeda(metas.metaMensalPorVendedor)}
               </p>
             </div>
 
             <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
-              <p className="text-sm text-neutral-400">Meta diária por vendedor</p>
-              <p className="mt-3 text-3xl font-bold text-white">
+              <p className="text-sm text-neutral-400">Meta diaria por vendedor</p>
+              <p className="mt-3 break-words text-2xl font-bold text-white sm:text-3xl">
                 {formatarMoeda(metas.metaDiariaPorVendedor)}
               </p>
             </div>
           </section>
 
-          <section className="p-6">
+          <section className="p-4 sm:p-6">
             <h3 className="text-xl font-bold text-white">
-              Distribuição por vendedor
+              Distribuicao por vendedor
             </h3>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 grid gap-3 lg:grid-cols-2">
               {vendedoresAtivosLoja.map((vendedor) => (
                 <div
                   key={vendedor.id}
-                  className="flex items-center justify-between rounded-2xl border border-neutral-800 bg-neutral-950 px-4 py-4"
+                  className="rounded-2xl border border-neutral-800 bg-neutral-950 px-4 py-4"
                 >
-                  <div>
-                    <p className="text-lg font-semibold text-white">
-                      {vendedor.nome}
-                    </p>
-                    <p className="text-sm text-neutral-400">
-                      Código: {vendedor.codigo || "--"}
-                    </p>
-                  </div>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-lg font-semibold text-white">
+                        {vendedor.nome}
+                      </p>
+                      <p className="text-sm text-neutral-400">
+                        Codigo: {vendedor.codigo || "--"}
+                      </p>
+                    </div>
 
-                  <div className="text-right">
-                    <p className="text-sm text-neutral-400">Meta diária</p>
-                    <p className="text-lg font-bold text-white">
-                      {formatarMoeda(metas.metaDiariaPorVendedor)}
-                    </p>
+                    <div className="rounded-2xl border border-neutral-800 bg-neutral-900/70 px-4 py-3 sm:min-w-[180px] sm:text-right">
+                      <p className="text-sm text-neutral-400">Meta diaria</p>
+                      <p className="mt-1 break-words text-lg font-bold text-white">
+                        {formatarMoeda(metas.metaDiariaPorVendedor)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}

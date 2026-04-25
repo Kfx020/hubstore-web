@@ -4,114 +4,74 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function LoginPage() {
-  /*
-    useRouter:
-    serve para navegar entre páginas pelo código
-  */
   const router = useRouter();
 
-  /*
-    ESTADOS DA TELA
-
-    email:
-    guarda o valor digitado no campo de email
-
-    senha:
-    guarda o valor digitado no campo de senha
-
-    erro:
-    guarda a mensagem de erro da validação
-
-    mostrarSenha:
-    controla se a senha aparece visível ou escondida
-  */
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
-  /*
-    FUNÇÃO DE ENVIO DO FORMULÁRIO
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-    Fluxo:
-    1. impede recarregamento
-    2. valida os campos
-    3. salva uma sessão local no navegador
-    4. redireciona para /operacao
+    if (email.trim() === "" || senha.trim() === "") {
+      setErro("Preencha email e senha para continuar.");
+      return;
+    }
 
-    Por que fiz assim:
-    porque isso já transforma o login em algo funcional para o MVP,
-    mesmo sem backend de autenticação ainda.
-  */
- function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-  event.preventDefault();
+    if (!email.includes("@")) {
+      setErro("Digite um email valido.");
+      return;
+    }
 
-  if (email.trim() === "" || senha.trim() === "") {
-    setErro("Preencha email e senha para continuar.");
-    return;
+    setErro("");
+
+    const expiraEm = new Date();
+    expiraEm.setDate(expiraEm.getDate() + 1);
+
+    document.cookie = `vezify_auth=true; expires=${expiraEm.toUTCString()}; path=/`;
+
+    router.push("/operacao");
   }
-
-  if (!email.includes("@")) {
-    setErro("Digite um email válido.");
-    return;
-  }
-
-  setErro("");
-
-  /*
-    COOKIE DO MVP
-
-    expires:
-    define validade da sessão por 1 dia
-
-    path=/:
-    deixa a cookie disponível no app inteiro
-  */
-  const expiraEm = new Date();
-  expiraEm.setDate(expiraEm.getDate() + 1);
-
-  document.cookie = `vezify_auth=true; expires=${expiraEm.toUTCString()}; path=/`;
-
-  router.push("/operacao");
-}
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-neutral-950 via-neutral-950 to-neutral-900 px-4 py-8 text-white md:px-6">
-      <div className="mx-auto flex min-h-[85vh] max-w-6xl items-center justify-center">
-        <div className="grid w-full overflow-hidden rounded-[28px] border border-neutral-800 bg-neutral-900/95 shadow-[0_20px_80px_rgba(0,0,0,0.45)] lg:grid-cols-2">
-          {/* LADO ESQUERDO */}
-          <section className="flex flex-col justify-between border-b border-neutral-800 p-8 lg:border-b-0 lg:border-r lg:p-10">
+    <main className="min-h-screen bg-gradient-to-b from-neutral-950 via-neutral-950 to-neutral-900 px-4 py-6 text-white sm:px-5 md:px-6 md:py-8">
+      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl items-center justify-center lg:min-h-[85vh]">
+        <div className="grid w-full overflow-hidden rounded-[24px] border border-neutral-800 bg-neutral-900/95 shadow-[0_20px_80px_rgba(0,0,0,0.45)] md:rounded-[28px] lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+          <section className="flex flex-col justify-between border-b border-neutral-800 p-6 sm:p-8 lg:min-h-[620px] lg:border-b-0 lg:border-r lg:p-10">
             <div>
               <span className="inline-flex rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-[0.22em] text-cyan-300">
                 Vezify
               </span>
 
-              <h1 className="mt-6 text-4xl font-bold tracking-tight text-white md:text-5xl">
-                Gestão de atendimento com visão operacional real.
+              <h1 className="mt-5 max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+                Gestao de atendimento com visao operacional real.
               </h1>
 
-              <p className="mt-4 max-w-xl text-base leading-7 text-neutral-400">
-                Entre no painel para acompanhar fila, atendimento, resumo do dia
-                e desempenho da equipe da loja.
+              <p className="mt-4 max-w-xl text-sm leading-6 text-neutral-400 sm:text-base sm:leading-7">
+                Entre no painel para acompanhar fila, atendimento, resumo do
+                dia e desempenho da equipe da loja.
               </p>
             </div>
 
-            <div className="mt-10 grid gap-3">
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:mt-10 lg:grid-cols-1">
               <div className="rounded-2xl border border-neutral-800 bg-neutral-950/70 p-4">
-                <p className="text-sm font-medium text-white">Operação da loja</p>
+                <p className="text-sm font-medium text-white">
+                  Operacao da loja
+                </p>
                 <p className="mt-1 text-sm text-neutral-400">
-                  Controle de fila, atendimento e rotação da equipe.
+                  Controle de fila, atendimento e rotacao da equipe.
                 </p>
               </div>
 
               <div className="rounded-2xl border border-neutral-800 bg-neutral-950/70 p-4">
                 <p className="text-sm font-medium text-white">Resumo do dia</p>
                 <p className="mt-1 text-sm text-neutral-400">
-                  Leitura rápida dos números operacionais da loja.
+                  Leitura rapida dos numeros operacionais da loja.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-neutral-800 bg-neutral-950/70 p-4">
+              <div className="rounded-2xl border border-neutral-800 bg-neutral-950/70 p-4 sm:col-span-2 lg:col-span-1">
                 <p className="text-sm font-medium text-white">Ranking</p>
                 <p className="mt-1 text-sm text-neutral-400">
                   Acompanhamento visual de desempenho da equipe.
@@ -120,8 +80,7 @@ export default function LoginPage() {
             </div>
           </section>
 
-          {/* LADO DIREITO */}
-          <section className="p-8 lg:p-10">
+          <section className="p-6 sm:p-8 lg:flex lg:items-center lg:p-10">
             <div className="mx-auto w-full max-w-md">
               <div>
                 <p className="text-sm uppercase tracking-[0.2em] text-neutral-500">
@@ -134,7 +93,6 @@ export default function LoginPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-                {/* CAMPO EMAIL */}
                 <div>
                   <label
                     htmlFor="email"
@@ -156,7 +114,6 @@ export default function LoginPage() {
                   />
                 </div>
 
-                {/* CAMPO SENHA */}
                 <div>
                   <label
                     htmlFor="senha"
@@ -215,12 +172,8 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* MENSAGEM DE ERRO */}
-                {erro && (
-                  <p className="text-sm font-medium text-red-400">{erro}</p>
-                )}
+                {erro && <p className="text-sm font-medium text-red-400">{erro}</p>}
 
-                {/* BOTÃO */}
                 <div className="pt-2">
                   <button
                     type="submit"
@@ -231,9 +184,9 @@ export default function LoginPage() {
                 </div>
               </form>
 
-              <p className="mt-6 text-sm text-neutral-500">
-                Nesta etapa, o login já salva uma sessão local do MVP. Depois a
-                gente liga com autenticação real.
+              <p className="mt-6 text-sm leading-6 text-neutral-500">
+                Nesta etapa, o login ja salva uma sessao local do MVP. Depois a
+                gente liga com autenticacao real.
               </p>
             </div>
           </section>

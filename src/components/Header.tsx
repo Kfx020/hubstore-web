@@ -55,9 +55,8 @@ export default function Header({
 
   return (
     <header className="border-b border-neutral-800 bg-gradient-to-r from-neutral-900 via-neutral-900 to-neutral-950 px-3 py-3 sm:px-4 sm:py-4">
-      <div className="flex flex-col gap-2">
-        {/* LINHA 1 */}
-        <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
               {produto}
@@ -67,7 +66,7 @@ export default function Header({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 self-start lg:justify-end">
             <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-medium text-emerald-300 sm:text-xs">
               Status: {status}
             </div>
@@ -81,7 +80,6 @@ export default function Header({
           </div>
         </div>
 
-        {/* LINHA 2 */}
         <div className="flex flex-wrap items-center gap-2 text-[11px] text-neutral-300 sm:text-xs">
           <span className="rounded-full border border-neutral-700 bg-neutral-950/70 px-2.5 py-1">
             {cliente}
@@ -100,25 +98,24 @@ export default function Header({
           </span>
         </div>
 
-        {/* LINHA 3 */}
-        <div className="flex justify-end gap-2">
+        <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end">
           <Link
             href="/resumo"
-            className="rounded-lg border border-neutral-700 px-3 py-1.5 text-center text-[11px] font-medium text-white transition hover:bg-neutral-800 sm:text-xs"
+            className="rounded-lg border border-neutral-700 px-3 py-2 text-center text-[11px] font-medium text-white transition hover:bg-neutral-800 sm:text-xs"
           >
             Resumo
           </Link>
 
           <Link
             href="/ranking"
-            className="rounded-lg border border-neutral-700 px-3 py-1.5 text-center text-[11px] font-medium text-white transition hover:bg-neutral-800 sm:text-xs"
+            className="rounded-lg border border-neutral-700 px-3 py-2 text-center text-[11px] font-medium text-white transition hover:bg-neutral-800 sm:text-xs"
           >
             Ranking
           </Link>
 
           <Link
             href="/metas"
-            className="rounded-lg border border-neutral-700 px-3 py-1.5 text-center text-[11px] font-medium text-white transition hover:bg-neutral-800 sm:text-xs"
+            className="rounded-lg border border-neutral-700 px-3 py-2 text-center text-[11px] font-medium text-white transition hover:bg-neutral-800 sm:text-xs"
           >
             Metas
           </Link>
