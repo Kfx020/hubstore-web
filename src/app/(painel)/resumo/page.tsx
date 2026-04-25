@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import BackToOperationButton from "@/components/BackToOperationButton";
 import Header from "@/components/Header";
 import { useAppState } from "@/context/AppStateContext";
+import { calcularMetaLoja, formatarMoeda } from "@/lib/calculations";
 
 export default function ResumoPage() {
   const { lojaAtual, clienteAtual, marcaAtual, dataOperacao, atendimentos } =
@@ -54,56 +55,84 @@ export default function ResumoPage() {
       ehTrocaComDiferenca(atendimento.resultado)
     ).length;
 
-    const desempenhoPorVendedor = new Map<
-      string,
-      {
-        vendedorNome: string;
-        atendimentos: number;
-        vendas: number;
-      }
-    >();
-
-    atendimentosLoja.forEach((atendimento) => {
-      const atual = desempenhoPorVendedor.get(atendimento.vendedorId) ?? {
-        vendedorNome: atendimento.vendedorNome?.trim() || "Vendedor sem nome",
-        atendimentos: 0,
-        vendas: 0,
-      };
-
-      atual.atendimentos += 1;
-
-      if (ehVenda(atendimento.resultado)) {
-        atual.vendas += 1;
-      }
-
-      desempenhoPorVendedor.set(atendimento.vendedorId, atual);
-    });
-
-    const vendedoresOrdenados = Array.from(
-      desempenhoPorVendedor.values()
-    ).sort((a, b) => {
-      if (b.vendas !== a.vendas) {
-        return b.vendas - a.vendas;
-      }
-
-      if (b.atendimentos !== a.atendimentos) {
-        return b.atendimentos - a.atendimentos;
-      }
-
-      return a.vendedorNome.localeCompare(b.vendedorNome, "pt-BR");
-    });
-
     return {
       totalAtendimentos,
       totalVendas,
       totalNaoVendas,
       totalTrocas,
       totalTrocasComDiferenca,
-      melhorResultado: vendedoresOrdenados[0]?.vendedorNome?.trim() || "Sem dados",
-      maiorVolumeVendas: vendedoresOrdenados[0]?.vendas ?? 0,
-      pa: "--",
     };
   }, [atendimentosLoja]);
+
+  const metaLoja = useMemo(() => {
+    return calcularMetaLoja(lojaAtual);
+  }, [lojaAtual]);
+
+  const cardsComerciais = [
+    {
+      titulo: "Meta do dia",
+      valor: formatarMoeda(metaLoja.valorMetaDia),
+      detalhe: "Meta diaria definida pela regra atual da loja.",
+    },
+    {
+      titulo: "Valor vendido hoje",
+      valor: "--",
+      detalhe: "Aguardando PDV",
+    },
+    {
+      titulo: "Falta para meta do dia",
+      valor: "--",
+      detalhe: "Aguardando valor vendido do PDV.",
+    },
+    {
+      titulo: "PA da loja",
+      valor: "--",
+      detalhe: "Aguardando quantidade vendida e tickets PDV.",
+    },
+    {
+      titulo: "Tickets PDV",
+      valor: "--",
+      detalhe: "Aguardando PDV",
+    },
+    {
+      titulo: "Ticket medio",
+      valor: "--",
+      detalhe: "Aguardando PDV",
+    },
+    {
+      titulo: "Quantidade vendida",
+      valor: "--",
+      detalhe: "Aguardando pecas vendidas pelo PDV.",
+    },
+  ];
+
+  const cardsOperacionais = [
+    {
+      titulo: "Atendimentos",
+      valor: resumo.totalAtendimentos,
+      detalhe: "Total registrado na loja.",
+    },
+    {
+      titulo: "Vendas registradas",
+      valor: resumo.totalVendas,
+      detalhe: "Atendimentos finalizados com venda no Vezify.",
+    },
+    {
+      titulo: "Nao vendas",
+      valor: resumo.totalNaoVendas,
+      detalhe: "Clientes que nao concluiram compra.",
+    },
+    {
+      titulo: "Trocas",
+      valor: resumo.totalTrocas,
+      detalhe: "Trocas registradas no dia.",
+    },
+    {
+      titulo: "Trocas com diferenca",
+      valor: resumo.totalTrocasComDiferenca,
+      detalhe: "Trocas com ajuste de valor.",
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-neutral-950 via-neutral-950 to-neutral-900 px-4 py-4 text-white sm:px-5 md:px-6 md:py-8">
@@ -129,7 +158,8 @@ export default function ResumoPage() {
                 </h2>
 
                 <p className="mt-2 text-sm leading-6 text-neutral-400">
-                  Leitura rapida dos principais numeros da operacao atual.
+                  Situacao da loja hoje, com operacao registrada no Vezify e
+                  indicadores comerciais preparados para o PDV.
                 </p>
               </div>
 
@@ -140,87 +170,53 @@ export default function ResumoPage() {
             </div>
           </section>
 
-          <section className="grid gap-4 border-b border-neutral-800 p-4 sm:p-6 md:grid-cols-2 xl:grid-cols-3">
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
-              <p className="text-sm text-neutral-400">Vendedor destaque do dia</p>
-              <p className="mt-2 text-xl font-bold text-white sm:text-2xl">
-                {resumo.melhorResultado}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-neutral-500">
-                Maior resultado em vendas na operacao do dia.
+          <section className="border-b border-neutral-800 p-4 sm:p-6">
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-cyan-400">
+                Desempenho da loja hoje
               </p>
             </div>
 
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-4">
-              <p className="text-sm text-neutral-400">Maior volume de vendas</p>
-              <p className="mt-2 text-xl font-bold text-white sm:text-2xl">
-                {resumo.maiorVolumeVendas}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-neutral-500">
-                Quantidade de vendas do destaque do dia.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-neutral-800 bg-neutral-950 p-4 md:col-span-2 xl:col-span-1">
-              <p className="text-sm text-neutral-400">PA</p>
-              <p className="mt-2 text-xl font-bold text-white sm:text-2xl">
-                {resumo.pa}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-neutral-500">
-                Sera calculado quando entrar ticket e quantidade.
-              </p>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {cardsComerciais.map((card) => (
+                <div
+                  key={card.titulo}
+                  className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5"
+                >
+                  <p className="text-sm text-neutral-400">{card.titulo}</p>
+                  <p className="mt-3 break-words text-2xl font-bold text-white sm:text-3xl">
+                    {card.valor}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-neutral-500">
+                    {card.detalhe}
+                  </p>
+                </div>
+              ))}
             </div>
           </section>
 
-          <section className="grid gap-4 p-4 sm:p-6 md:grid-cols-2 xl:grid-cols-3">
-            <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
-              <p className="text-sm text-neutral-400">Atendimentos</p>
-              <p className="mt-3 text-3xl font-bold text-white sm:text-4xl">
-                {resumo.totalAtendimentos}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-neutral-500">
-                Total registrado na loja.
+          <section className="p-4 sm:p-6">
+            <div className="mb-4">
+              <p className="text-xs uppercase tracking-[0.22em] text-cyan-400">
+                Operacao registrada no Vezify
               </p>
             </div>
 
-            <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
-              <p className="text-sm text-neutral-400">Vendas</p>
-              <p className="mt-3 text-3xl font-bold text-white sm:text-4xl">
-                {resumo.totalVendas}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-neutral-500">
-                Atendimentos finalizados com venda.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
-              <p className="text-sm text-neutral-400">Nao vendas</p>
-              <p className="mt-3 text-3xl font-bold text-white sm:text-4xl">
-                {resumo.totalNaoVendas}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-neutral-500">
-                Clientes que nao concluiram compra.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5">
-              <p className="text-sm text-neutral-400">Trocas</p>
-              <p className="mt-3 text-3xl font-bold text-white sm:text-4xl">
-                {resumo.totalTrocas}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-neutral-500">
-                Trocas registradas no dia.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5 md:col-span-2 xl:col-span-1">
-              <p className="text-sm text-neutral-400">Trocas com diferenca</p>
-              <p className="mt-3 text-3xl font-bold text-white sm:text-4xl">
-                {resumo.totalTrocasComDiferenca}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-neutral-500">
-                Trocas com ajuste de valor.
-              </p>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {cardsOperacionais.map((card) => (
+                <div
+                  key={card.titulo}
+                  className="rounded-3xl border border-neutral-800 bg-neutral-950 p-5"
+                >
+                  <p className="text-sm text-neutral-400">{card.titulo}</p>
+                  <p className="mt-3 text-3xl font-bold text-white sm:text-4xl">
+                    {card.valor}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-neutral-500">
+                    {card.detalhe}
+                  </p>
+                </div>
+              ))}
             </div>
           </section>
         </div>
